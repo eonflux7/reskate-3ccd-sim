@@ -32,10 +32,10 @@ Runs in this order. Status is for `shader/Shaders/SkateHvxSim.fx`.
 | # | Stage | Pass | Status |
 |---|---|---|---|
 | 1 | Linearize the frame, undo highlight roll-off | Sensor | first version (SDR only, assumed curve) |
-| 2 | Lens: projection, CA, softness, falloff, hood | Sensor | todo (M4) |
+| 2 | Lens: projection, CA, softness, falloff, hood | Sensor | first version, see M4 |
 | 3 | Area sample each channel at sensor size, green offset | Sensor | first version |
 | 4 | Pixel shift luma reconstruction | Camera | first version, see M1 |
-| 5 | Vertical highlight smear | Camera | todo (M3) |
+| 5 | Vertical highlight smear | SmearColumns, Smear, Camera | first version, see M3 |
 | 6 | Per-channel noise at sensor scale | Camera | first version |
 | 7 | Matrix, gamma, knee | Camera | gamma and knee measured (EBU), identity matrix |
 | 8 | Detail with coring | Codec | first version |
@@ -66,15 +66,24 @@ blur setting. Done when 24p panning judders like real 24p footage.
 First version. A clock counts real time and the camera passes only draw when it takes a frame, so
 `CodedTex` is the held frame and noise updates at the camera's rate. A float32 port of the clock holds
 23.976 frames/s from 24 to 240 fps with no catch-up after a hitch, and gives 2:3 at 60 fps. A 30 fps game
-gives an uneven 1,1,2 pattern. Not yet judged in game against real 24p.
+gives an uneven 1,1,2 pattern. Judged OK by eye in game (2026-11-06), but not against real 24p footage.
 Shutter is left to the game: `WorldRender.MotionBlurScale` follows the `MotionBlur` setting
 (`scripts/Game/QualitySettings/Graphics.lua`). What the scale means in shutter terms is unknown, so a
 value for 1/48 has to be found by eye. Without blur, 24p will strobe rather than smear.
 
-**M3: Highlights.** Run the HDR source test below, then add smear. The knee is done, using EBU figures.
+**M3: Highlights.** Run the HDR source test below. The knee is done, using EBU figures.
+Smear is a first version, not yet seen in game. The game clips the sun and a blown-out sky to the same
+white, so a true column sum would veil the picture under any bright sky. Instead it measures how much of
+each column is near white, fades out tall sources, then removes what nearby columns share. A numpy port
+gives a streak from a sun or a glint and none from a blown-out sky. Known misses: a sun inside a blown-out
+sky gets no streak, and a long white ledge streaks at its ends. The HDR test could fix both. All values
+are guesses, to tune by eye.
 
 **M4: Lenses.** See [Lens simulation](#lens-simulation). Done when each lens matches real footage on
 straight lines, frame edges and corner darkening.
+First version of all five lens stages, and the Opteka looks good in game by eye. A numpy port reproduces the FOV table below,
+and each hood covers what the render can't reach. Curves are equidistant and CA, softness and falloff
+are guesses until footage turns up. The plugin holds the FOV with `Render.ForceFov`.
 
 **M5: Colour.** Build matrix and LUT data from footage (`calibration/README.md`). Gamma is measured
 already. Blocked: there's no camera, and no usable footage has been found. Done when a chart or a
@@ -117,7 +126,7 @@ with an equidistant curve, then fit it to footage.
 
 **The main constraint: the shader can only bend what the game drew.** The game renders a flat
 (rectilinear) view, which can't reach 90° off axis and spends few pixels on the centre at wide angles.
-Estimates below assume an equidistant lens and a 16:9 render. Sampling is game pixels per sensor pixel
+Estimates below assume an equidistant lens and a 16:9 render, with the VX1000 rows using its 4:3 frame. Sampling is game pixels per sensor pixel
 at the frame centre, and below 1.0 the centre is blurrier than the real camera.
 
 | Setup | Game vertical FOV needed | 1080p | 1440p | 4K |
@@ -140,15 +149,19 @@ What follows from this:
   to be 125°, so measure that.
 
 **FOV has to match.** The shader needs the game's real FOV, and ReShade can't read it. The companion
-plugin should set the FOV for each lens, and the shader's profile assumes that value. Options are
-`reskate.settings.set` on `Render.Fov`, `reskate.camera.set` (10-150°, but this takes over the camera),
-or data edits as in the OG Camera mod. A mismatch makes straight lines bend wrongly.
+plugin holds `Render.ForceFov` with `reskate.settings.set`, which puts the old value back when it lets go,
+and shows the held value, which goes in the shader's "Game vertical FOV" slider. `reskate.camera.get()`
+doesn't report a forced FOV, so it can't confirm the hold. There is no `Render.Fov`. Left alone, the game's
+FOV moves: the log shows 65 to 84 in play and 28 at times, so a lens needs it forced. Whether `ForceFov` is
+vertical is unproven, and the first good look in game had the hold moving between 94, 101 and 145. Fallbacks are
+`reskate.camera.set` (10-150°, but this takes over the camera) or data edits as in the OG Camera mod. A
+mismatch makes straight lines bend wrongly.
 
 ## Experiments
 
 **FOV test.** Do this during M0, because the lens work depends on it. Check if the plugin can hold a
 wide FOV during normal play and what the limit really is. Also check for geometry or culling problems at
-145°, and if `Render.Fov` is vertical or horizontal.
+145°, and if `Render.ForceFov` is vertical or horizontal.
 
 **Tonemap.** The game's image stays clean because the camera gamma nearly cancels the 2.2 decode, so
 stage 1 now inverts an assumed roll-off, set by "Game white as exposure". The curve is a stand-in: the GPU

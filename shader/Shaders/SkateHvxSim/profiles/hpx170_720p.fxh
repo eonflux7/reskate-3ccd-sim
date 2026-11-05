@@ -10,6 +10,11 @@
 #define DEF_CHROMA_V 1                     // 4:2:2, verified
 #define DEF_GREEN_SHIFT float2(0.5, 0.5)   // guess
 #define DEF_PIXEL_SHIFT 1.0                // guess
+#define DEF_SMEAR_LEVEL 1.0                // guess: tune by eye, no published smear figure
+#define DEF_SMEAR_THRESHOLD 0.85           // guess
+#define DEF_SMEAR_MAX_SIZE 0.08            // guess
+#define DEF_SMEAR_REJECT 1.0               // guess
+#define DEF_SMEAR_TINT float3(1.0, 0.8, 0.85) // guess: general CCD knowledge, red leaks most
 #define DEF_NOISE_SNR 46.0                 // guess
 #define DEF_NOISE_FLOOR 0.1                // guess
 #define DEF_NOISE_CHANNEL float3(1.0, 1.0, 1.0) // guess

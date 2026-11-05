@@ -31,6 +31,19 @@ Frame rate is under **Motion**, and it's 23.98p unless you change it. The pictur
 but the game keeps running at its own, so input feels the same but the view lags a little more. A game
 frame rate of 60 or 120 gives the cleanest cadence. Turn on the game's motion blur, or 24p will strobe.
 
+Smear is under **Smear**: the vertical streak through a bright source like the sun or a lamp.
+
+To use a lens, set `SIM_LENS` under the sliders: 1 Century Xtreme, 2 Century Mk1, 3 Opteka 0.3x, and 0 for
+no adapter. The lens has to know the game's FOV:
+
+1. In the ReSkate menu, open **HVX SIM**, pick the same lens and turn on **Hold FOV for a lens**.
+2. Read **FOV held at** on that page.
+3. Set **Game vertical FOV** under **Lens** in ReShade to that number. Each lens's default already matches.
+
+A preset keeps its saved lens sliders when you switch lens, so reset the **Lens** sliders in ReShade after
+changing `SIM_LENS`. The lens bends the HUD too, so hide it on the same page. A wide FOV changes what you
+see in play, and at 1080p the Xtreme is blurrier in the centre than a real camera.
+
 Optional offline codec pass:
 
 ```sh

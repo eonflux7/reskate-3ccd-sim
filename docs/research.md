@@ -12,6 +12,9 @@ Collected 2026-11-05. Confidence: **verified** (checked directly), **sourced** (
 - `reskate.screen.look(look)`: fields `bend fov bars hood grade soft scanlines grain age dropouts
   head_switching tracking smear iris rolling text`. Lasts 300 ms per call. `grade` and `grain` are SDR only.
 - Native toggles: film grain, vignette, chromatic aberration.
+- `reskate.camera.get()` needs `camera` and gives the live vertical `fov`. `reskate.settings.set(name, value)`
+  needs `settings.write`, holds the value and puts the old one back on `nil` or when the plugin stops.
+  Refused in multiplayer only for settings that change how the game plays. (docs.reskate.dev, 2026-11-06)
 - `reskate.hud.hide(bool)` needs `hud`. `reskate.menu.state()` gives `known pause reskate replay_editor
   page`, needs `menu`.
 - Thunderstore refuses packages with DLL, EXE and similar. Tick the Plugins category or it won't run.

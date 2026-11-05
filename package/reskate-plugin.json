@@ -2,5 +2,12 @@
   "api": 1,
   "entry": "plugin/main.lua",
   "side": "client",
-  "permissions": ["hud", "menu", "storage", "input"]
+  "permissions": [
+    "hud",
+    "menu",
+    "storage",
+    "input",
+    "camera",
+    "settings.write"
+  ]
 }
