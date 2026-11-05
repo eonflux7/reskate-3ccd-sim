@@ -1,6 +1,6 @@
 # Research notes
 
-Collected 2026-11-05. Confidence: **verified** (checked directly), **sourced** (a published source),
+Collected from 2026-11-05. Confidence: **verified** (checked directly), **sourced** (a published source),
 **second-hand** (forums or articles repeating a claim), **memory** (not checked).
 
 ## ReSkate (verified in source, commit 95b0a43, 2026-11-04)

@@ -5,8 +5,12 @@
 #   scripts/deploy.sh               install or update
 #   scripts/deploy.sh --uninstall   remove what this script installed, keep ReShade.ini and the preset
 #
-# SKATE_DIR overrides the game folder. HVX_PROXY is tried if the ReShade site won't load directly.
+# SKATE_DIR is the ReSkate folder, as a WSL path. HVX_PROXY is optional, and is tried if the ReShade site
+# won't load directly. Set them in the environment, or in a .deploy.env file at the repo root (not committed).
 set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -f "$ROOT/.deploy.env" ]]; then source "$ROOT/.deploy.env"; fi
 
 GAME_DIR="${SKATE_DIR:-}"
 PROXY="${HVX_PROXY:-}"
@@ -18,7 +22,6 @@ RESHADE_VERSION="6.8.0"
 RESHADE_SETUP_SHA256="207aea16205fbf952bc8fe1879966672454cf04002e7ad34237c7990a5b3c0b4"
 RESHADE_DLL_SHA256="b2945c29e7095491a901746b400e58db9b1592ab092bacf2a888ce37f02d08da"
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/skate-hvx-sim"
 SHADER_DIR="$GAME_DIR/reshade-shaders/Shaders"
 PLUGIN_DIR="$GAME_DIR/Mods/$PLUGIN_NAME"
@@ -37,7 +40,7 @@ fetch_reshade() {
     if [[ ! -f "$setup" ]] || [[ "$(sha "$setup")" != "$RESHADE_SETUP_SHA256" ]]; then
         say "Downloading ReShade $RESHADE_VERSION"
         curl -fsSL --max-time 120 -o "$setup" "$url" ||
-            curl -fsSL --max-time 120 -x "$PROXY" -o "$setup" "$url" ||
+            { [[ -n "$PROXY" ]] && curl -fsSL --max-time 120 -x "$PROXY" -o "$setup" "$url"; } ||
             die "couldn't download $url"
     fi
     [[ "$(sha "$setup")" == "$RESHADE_SETUP_SHA256" ]] || die "ReShade installer hash doesn't match the pinned one"
@@ -101,7 +104,8 @@ uninstall() {
     say "Removed. ReShade.ini and ReShadePreset.ini were kept."
 }
 
-[[ -f "$GAME_DIR/Skate.exe" ]] || die "no Skate.exe in $GAME_DIR, set SKATE_DIR"
+[[ -n "$GAME_DIR" ]] || die "set SKATE_DIR to the ReSkate folder, for example /mnt/c/Games/ReSkate"
+[[ -f "$GAME_DIR/Skate.exe" ]] || die "no Skate.exe in $GAME_DIR, check SKATE_DIR"
 
 case "${1:-}" in
     --uninstall) uninstall ;;

@@ -1,7 +1,7 @@
 {
   "name": "Skate_HVX_Sim",
   "version_number": "0.1.0",
-  "website_url": "",
-  "description": "Companion plugin for the Skate HVX Sim ReShade effect: optionally hides the HUD so it stays out of the camera look.",
+  "website_url": "https://github.com/eonflux7/reskate-3ccd-sim",
+  "description": "Companion plugin for the Skate HVX Sim ReShade effect: optionally hides the HUD and holds the FOV for a lens.",
   "dependencies": []
 }
